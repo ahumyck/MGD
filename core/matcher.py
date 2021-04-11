@@ -102,14 +102,31 @@ def drawMatches(img1, kp1, img2, kp2, matches):
 
 
 def sortMatchersBy(matchers, attribute_name):
+    """
+        Сортировка совпадений по заданному атрибуту
+    :param matchers: список совпадений
+    :param attribute_name: имя атрибута
+    :return: отсортированный список совпадений по атрибуту
+    """
     return sorted(matchers, key=attrgetter(attribute_name))
 
 
 def sortMatchersByNorm(matchers):
+    """
+        Сортировка по L2 норме
+    :param matchers: список совпадений
+    :return: отсортированный список по L2 норме (в возрастающем порядке)
+    """
     return sortMatchersBy(matchers, 'distance')
 
 
 def calculateDistance(point1, point2):
+    """
+        Вычисление расстояния между точками по теореме пифагора
+    :param point1: точка А
+    :param point2: точка Б
+    :return: расстояние между точками А и Б
+    """
     dx = point1.pt[0] - point2.pt[0]
     dy = point1.pt[1] - point2.pt[1]
     return np.sqrt(dx * dx + dy * dy)

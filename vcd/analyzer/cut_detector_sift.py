@@ -27,14 +27,14 @@ class CutDetectorSIFT(CutDetector):
 
                 # ищем совпадающие ключевые точки
                 matchers = match_by_bruteforce_fast(kp_prev, des_prev, kp_current, des_current)
-                # сортируем
-                matchers = sortMatchersByNorm(matchers)
-                # берем 5 "лучших" точек
-                matchers = matchers[0:5]
                 if len(matchers) == 0:
                     self._possible_cut.append(n)
-                    scores.append(scores[-1])
                 else:
+                    # сортируем
+                    matchers = sortMatchersByNorm(matchers)
+                    # берем 5 "лучших" точек
+                    matchers = matchers[0:5]
+                    # считаем среднее движение кадра
                     scores.append(np.mean(average_for_matchers(matchers, kp_prev, kp_current)))
                 kp_prev = kp_current
                 des_prev = des_current
@@ -49,10 +49,19 @@ class CutDetectorSIFT(CutDetector):
     def analyze_scores(self):
         mean = np.mean(self._scores)
         var = np.sqrt(np.var(self._scores))
-        more = np.where(self._scores > mean + 3 * var)
-        less = np.where(self._scores < mean + 3 * var)
-        indexes = np.concatenate(less, more)
-        print(self._possible_cut)
-        print(mean)
-        print(var)
+        more = np.where(self._scores > mean + 3 * var)[0]
+        less = np.where(self._scores < mean - 3 * var)[0]
+        print(mean, var)
+        print(self._scores)
+
+        # todo: make np.concatenate(less, more, self.scores) work
+
+        indexes = []
+        for index in less:
+            indexes.append(index)
+        for index in more:
+            indexes.append(index)
+        for index in self._possible_cut:
+            indexes.append(index)
+        indexes = np.array(indexes)
         return indexes, self._scores[indexes]

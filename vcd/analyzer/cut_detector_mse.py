@@ -38,5 +38,5 @@ class CutDetectorMSE(CutDetector):
     def analyze_scores(self):
         mean = np.mean(self._scores)
         var = np.sqrt(np.var(self._scores))
-        indexes = np.where(self._scores > mean + 3 * var)
+        indexes = np.where(self._scores > mean + 3 * var)[0]
         return indexes, self._scores[indexes]

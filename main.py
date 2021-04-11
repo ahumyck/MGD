@@ -7,6 +7,7 @@ if __name__ == '__main__':
 
     # создаем объект для поиска склеек на видео
     slice_searcher = CutDetectorSIFT(path_to_video)
+    # slice_searcher = CutDetectorMSE(path_to_video)
     start = time.time()  # таймер
     scores = slice_searcher.search_for_slices()  # получение результатов
     end = time.time()
