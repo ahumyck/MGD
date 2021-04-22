@@ -23,7 +23,7 @@ def build_target(path_to_video):
 
 
 def build_scores(path_to_video):
-    slice_searcher = CutDetectorSIFT(path_to_video, th=60)
+    slice_searcher = CutDetectorSIFT(path_to_video)
     return get_scores(slice_searcher.search_for_slices())
 
 

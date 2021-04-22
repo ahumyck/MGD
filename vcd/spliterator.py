@@ -34,7 +34,7 @@ class VideoSlicer:
         self.__frames, self.__video_length = get_frames_and_length_of_video(self.__video_name)
 
     # получение подвидео
-    def slice_video(self, start, end):
+    def slice_video(self, start=None, end=None):
         if start is None and end is None:  # если не указано ни начало, ни конец, то возвращаем все видео
             return list(range(0, self.__frames, 1))
         s = int((start / self.__video_length) * self.__frames)  # переводим начало (в секундах) в номер кадра

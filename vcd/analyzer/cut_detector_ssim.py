@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 from skimage.metrics import structural_similarity as ssim
 
 from core.utils import make_template_jpg
@@ -18,7 +17,7 @@ class CutDetectorSSIM(CutDetector):
             например, искать минимумы в массиве оценок и говорить, что в данном месте скорее всего была склейка
             или, все оценки, которые ниже некоторого порогового значения, тоже считать склейками
         """
-        capture = cv2.VideoCapture(self.__video_name)  # получаем поток видео
+        capture = cv2.VideoCapture(self._video_name)  # получаем поток видео
         success, prev_image = capture.read()  # получаем очередное изображени е из видео
 
         scores = []
@@ -33,10 +32,4 @@ class CutDetectorSSIM(CutDetector):
                 break
 
         capture.release()  # возвращаем ресурсы компьютеру
-        self.__scores = np.array(scores)
-
-    def analyze_scores(self):
-        mean = np.mean(self.__scores)
-        var = np.sqrt(np.var(self.__scores))
-        indexes = np.where(self.__scores < mean - 3 * var)
-        return indexes, self.__scores[indexes]
+        return scores

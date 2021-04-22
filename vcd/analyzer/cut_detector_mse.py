@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 from skimage.metrics import mean_squared_error as mse
 
 from core.utils import make_template_jpg
@@ -33,10 +32,4 @@ class CutDetectorMSE(CutDetector):
                 break
 
         capture.release()  # возвращаем ресурсы компьютеру
-        self._scores = np.array(scores)
-
-    def analyze_scores(self):
-        mean = np.mean(self._scores)
-        var = np.sqrt(np.var(self._scores))
-        indexes = np.where(self._scores > mean + 3 * var)[0]
-        return indexes, self._scores[indexes]
+        return scores

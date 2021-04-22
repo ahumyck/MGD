@@ -45,7 +45,7 @@ def match_by_bruteforce_min_norm(kp1, des1, kp2, des2, dx=40, dy=40, th=10):
                     dtype=cv2.DMatch)
 
 
-def match_by_bruteforce_fast(kp1, des1, kp2, des2, dx=40, dy=40, th=10, limit=25):
+def match_by_bruteforce_fast(kp1, des1, kp2, des2, dx=40, dy=40, th=10, limit=15):
     """
         Ищем совпадения особых точек считая L2 норму разницы дискрипторов
         Если L2 норма меньше некоторого порогового значения, то считаем что ключевые точки совпадают, иначе нет
