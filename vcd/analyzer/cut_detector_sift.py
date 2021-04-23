@@ -27,15 +27,8 @@ class CutDetectorSIFT(CutDetector):
                 print(n)
                 kp_current, des_current = self._sift.detectAndCompute(current_image, None)
 
-                if des_prev is None or des_current is None:
-                    kp_prev = kp_current
-                    des_prev = des_current
-                    scores.append(0)
-                    n += 1
-                    continue
-
                 # ищем совпадающие ключевые точки
-                matchers = match_by_bruteforce_fast(kp_prev, des_prev, kp_current, des_current, th=self.__th)
+                matchers = match_by_bruteforce_fast(kp_prev, des_prev, kp_current, des_current, th1=self.__th)
                 if len(matchers) != 0:
                     # сортируем
                     matchers = sortMatchersByNorm(matchers)
@@ -43,8 +36,6 @@ class CutDetectorSIFT(CutDetector):
                     matchers = matchers[0:5]
                     # считаем среднее движение кадра
                     scores.append(np.mean(average_for_matchers(matchers, kp_prev, kp_current)))
-                else:
-                    scores.append(INVALID_VALUE)
                 kp_prev = kp_current
                 des_prev = des_current
                 n += 1

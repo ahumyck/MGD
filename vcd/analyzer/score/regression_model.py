@@ -1,10 +1,8 @@
 import pickle
 
-import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
+
+from vcd.analyzer.score.score_analyzer import ScoreAnalyzer
 
 
 def load_model(filename):
@@ -17,24 +15,11 @@ def save_mode(model, filename):
         pickle.dump(model, f)
 
 
-if __name__ == '__main__':
-    file = 'filename.model'
-    x = np.random.rand(1000, 30)
-    y = np.where(np.random.rand(1000, 1) > 0.5, 1, 0)
+# todo: regression model
+class RegressionModelScoreAnalyzer(ScoreAnalyzer):
+    def __init__(self, scores, model: LogisticRegression):
+        super().__init__(scores)
+        self.__model = model
 
-    xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.5, random_state=42)
-
-    classes = ['Склейка', 'Не склейка']
-    lr = LogisticRegression()
-    lr.fit(xtrain, ytrain)
-
-    predict = lr.predict(xtest)
-    print(confusion_matrix(ytest, predict))
-    print(classification_report(ytest, predict, target_names=classes))
-
-    save_mode(lr, file)
-
-    loaded = load_model(file)
-    predict = loaded.predict(xtest)
-    print(confusion_matrix(ytest, predict))
-    print(classification_report(ytest, predict, target_names=classes))
+    def analyze(self):
+        return self.__model.predict(self._scores)

@@ -1,76 +1,82 @@
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn import metrics
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 
-# from core.utils import get_frames_and_length_of_video
-from vcd.analyzer.cut_detector_mse import CutDetectorMSE
-from vcd.analyzer.cut_detector_sift import CutDetectorSIFT, INVALID_VALUE
-from vcd.analyzer.score.score_analyzer import EmpiricalRuleScoreAnalyzer
-
-
-def get_files(path_to_dir):
-    return [os.path.join(path_to_dir, f) for f in os.listdir(path_to_dir) if
-            os.path.isfile(os.path.join(path_to_dir, f))]
+from vcd.analyzer.score.regression_model import save_mode
 
 
-def build_target(path_to_video):
-    slice_searcher = CutDetectorMSE(path_to_video)
-    scores = slice_searcher.search_for_slices()  # получение результатов
-    score_analyzer = EmpiricalRuleScoreAnalyzer(scores)
-    indexes, _ = score_analyzer.analyze()
-    return get_target(indexes, len(scores))
+def cast_arrays(arrays):
+    def cast_str_to_array_of_numbers(arr: str):
+        s = arr[1:-1]
+        elements = s.split(",")
+        res = []
+        for element in elements:
+            res.append(float(element.strip()))
+        return np.array(res)
+
+    result = []
+    length = []
+    for array in arrays:
+        arr = cast_str_to_array_of_numbers(array)
+        length.append(len(arr))
+        result.append(arr)
+
+    index = min(length)
+    for i in range(len(result)):
+        arr = result[i]
+        result[i] = arr[-index:]
+
+    return np.array(result)
 
 
-def build_scores(path_to_video):
-    slice_searcher = CutDetectorSIFT(path_to_video, th=60)
-    return get_scores(slice_searcher.search_for_slices())
+def get_training_data(filename):
+    dataframe = pd.read_excel(filename, index_col=0)
+    return cast_arrays(dataframe['v(t) series']), dataframe['y series'].to_numpy()
 
 
-def get_scores(scores, th=30):
-    x = []
+def learning(training_data, test_size, model_name=None, roc_auc_curve_name=None):
+    x, y = training_data
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=42)
 
-    for index, score in enumerate(scores):
-        if index >= th:
-            var = np.array(scores[index - th + 1: index + 1])
-            var = var[var != INVALID_VALUE]
-            x.append(str(list(var)))
+    # classes = ['Не склейка', 'склейка']
+    lr = LogisticRegression()
+    lr.fit(x_train, y_train)
 
-    return x
+    # predict = lr.predict(x_test)
 
+    # print(confusion_matrix(y_test, predict))
+    # print(classification_report(y_test, predict, target_names=classes))
+    # print(roc_auc_score(y, lr.predict_proba(x)[:, 1]))
 
-def get_target(indexes, length, th=30):
-    y = []
+    if model_name is not None:
+        save_mode(lr, model_name)
 
-    for index in range(length):
-        if index >= th:
-            if index in indexes:
-                y.append(1)
-            else:
-                y.append(0)
-
-    return y
+    if roc_auc_curve_name is not None:
+        metrics.plot_roc_curve(lr, x_test, y_test)
+        plt.savefig(roc_auc_curve_name)
 
 
 if __name__ == '__main__':
-    video_name = "C:\\Users\\ahumyck\\PycharmProjects\\diplom\\vcd\\resources\\video\\result.mp4"
-    X = []
-    Y = []
+    root = os.getcwd()
+    training_data_filename = os.path.join(root, "vcd/resources/data/data_ready.xlsx")
+    model_template_name = os.path.join(root, "vcd/resources/models/lr_{}.model")
+    roc_auc_curve_template_name = os.path.join(root, "vcd/resources/result/roc_auc_{}.png")
 
-    print(f'video with name {video_name}')
-    X.extend(build_scores(video_name))
-    print("scores done for video")
-    Y.extend(build_target(video_name))
-    print("target done for video")
+    x, y = get_training_data(training_data_filename)
 
-    Y = np.array(Y)
-    X = np.array(X)
+    epsilon = 1e-9
 
-    dataframe = pd.DataFrame(
-        {
-            "v(t) series": np.array(X),
-            "y series": np.array(Y)
-        }
-    )
+    test_sizes = np.arange(0.01, 0.9 + epsilon, 0.01)  # np.arange(0, 1.1, 0.5) => [0, 0.5, 1.0]
+    for test_size in test_sizes:
+        print(test_size)
+        model_name = model_template_name.format(format(test_size, '.2f'))
+        roc_auc_name = roc_auc_curve_template_name.format(format(test_size, '.2f'))
 
-    dataframe.to_excel("output_first.xlsx")
+        learning((x, y), test_size, model_name, roc_auc_name)
+
+    plt.close('all')
