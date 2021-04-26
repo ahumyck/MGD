@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from core.handler import SaltAndPepperHandler, MoveByHandler
 from core.matcher import match_by_bruteforce_min_norm, match_by_bruteforce_fast, drawMatches
 from core.utils import float_range
+import numpy as np
 
 WHITE = 255
 GRAY = 127

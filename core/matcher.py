@@ -45,7 +45,7 @@ def match_by_bruteforce_min_norm(kp1, des1, kp2, des2, dx=50, dy=50, th=50):
                     dtype=cv2.DMatch)
 
 
-def match_by_bruteforce_fast(kp1, des1, kp2, des2, dx=40, dy=40, th1=10, th2=50, limit=15):
+def match_by_bruteforce_fast(kp1, des1, kp2, des2, dx=40, dy=40, global_th=10, local_th=50, limit=15):
     """
         Ищем совпадения особых точек считая L2 норму разницы дискрипторов
         Если L2 норма меньше некоторого порогового значения, то считаем что ключевые точки совпадают, иначе нет
@@ -53,8 +53,8 @@ def match_by_bruteforce_fast(kp1, des1, kp2, des2, dx=40, dy=40, th1=10, th2=50,
     :param kp2: ключевые точки тестового изображениея
     :param des1: дискрипторы ключевых точек обучающего изображения
     :param des2: дискрипторы ключевых точек тестового изображения
-    :param th1: порог для L2 нормы, в случае если изменения произошли в небольшом квадранте
-    :param th2: порог для L2 нормы в рамках всего изображения
+    :param local_th: порог для L2 нормы, в случае если изменения произошли в небольшом квадранте
+    :param global_th: порог для L2 нормы в рамках всего изображения
     :param limit: ограниче сверху для кол-ва matcher'-ов
     :param dx: максимальная разность координат точек по оси х
     :param dy: максимальная разность координат точек по оси у
@@ -65,19 +65,21 @@ def match_by_bruteforce_fast(kp1, des1, kp2, des2, dx=40, dy=40, th1=10, th2=50,
     for trainIdx, d1 in enumerate(des1):
         for queryIdx, d2 in enumerate(des2):
             d = np.linalg.norm(d1 - d2)
-            if d <= th1:
+            if d <= global_th:
                 result.append(create_match(d, trainIdx, queryIdx, 0))
+                i += 1
                 break
-            elif d <= th2:
+            elif d <= local_th:
                 keypoint1 = kp1[trainIdx]
                 keypoint2 = kp2[queryIdx]
-                if np.abs(np.round(keypoint2.pt[1] - keypoint1.pt[1])) <= dx and \
-                        np.abs(np.round(keypoint2.pt[0] - keypoint1.pt[0])) <= dy:
+                if np.abs(keypoint2.pt[1] - keypoint1.pt[1]) <= dx and np.abs(keypoint2.pt[0] - keypoint1.pt[0]) <= dy:
                     result.append(create_match(d, trainIdx, queryIdx, 0))
                     i += 1
-                    if i >= limit:
-                        return np.array(result, dtype=cv2.DMatch)
                     break
+        if i >= limit:
+            print(f'i = {trainIdx}')
+            return np.array(result, dtype=cv2.DMatch)
+    print(f'Full loop was iterated {len(des1)} x {len(des2)}')
     return np.array(result, dtype=cv2.DMatch)
 
 

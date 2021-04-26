@@ -11,17 +11,17 @@ def get_files(path_to_dir):
             os.path.isfile(os.path.join(path_to_dir, f))]
 
 
-def build_scores(path_to_video):
-    slice_searcher = CutDetectorSIFT(path_to_video, th=75)
-    return get_scores(slice_searcher.search_for_slices())
+def build_scores(path_to_video, prev):
+    slice_searcher = CutDetectorSIFT(path_to_video, local_th=75)  # limit = 5
+    return get_scores(slice_searcher.search_for_slices(), prev)
 
 
-def get_scores(scores, th=30):
+def get_scores(scores, prev):
     x = []
 
     for index, score in enumerate(scores):
-        if index >= th:
-            var = scores[index - th + 1: index + 1]
+        if index >= prev:
+            var = scores[index - prev + 1: index + 1]
             x.append(str(var))
 
     return x
@@ -42,18 +42,20 @@ def build_target(filename, length, delta):
 
     target = [0] * length
     for frame in frames:
+        if frame >= length:
+            break
         target[frame] = 1
     return np.array(target)
 
 
 if __name__ == '__main__':
-    video_name = "/vcd/resources/video/result.mp4"
+    video_name = "C:\\Users\\ahumyck\\PycharmProjects\\diplom\\vcd\\resources\\video\\result.mp4"
     target_filename = "/vcd/resources/data/target.txt"
-    # todo: calculate offset as const
-    offset = 31
+    prev = 30
+    offset = prev + 1
 
     print(f'video with name {video_name}')
-    X = np.array(build_scores(video_name))
+    X = np.array(build_scores(video_name, prev))
     Y = np.array(build_target(target_filename, len(X), offset))
 
     dataframe = pd.DataFrame(

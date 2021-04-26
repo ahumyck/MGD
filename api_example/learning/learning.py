@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score
 from sklearn.model_selection import train_test_split
 
 from vcd.analyzer.score.regression_model import save_mode
@@ -27,20 +26,32 @@ def cast_arrays(arrays):
         length.append(len(arr))
         result.append(arr)
 
+    index = min(length)
+    for i in range(len(result)):
+        arr = result[i]
+        result[i] = arr[-index:]
+
     return np.array(result)
 
 
 def get_training_data(filename):
     dataframe = pd.read_excel(filename, index_col=0)
-    return cast_arrays(dataframe['frame average speed']), dataframe['target'].to_numpy()
+    return cast_arrays(dataframe['v(t) series']), dataframe['y series'].to_numpy()
 
 
 def learning(training_data, test_size, model_name=None, roc_auc_curve_name=None):
     x, y = training_data
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=42)
 
+    # classes = ['Не склейка', 'склейка']
     lr = LogisticRegression()
     lr.fit(x_train, y_train)
+
+    # predict = lr.predict(x_test)
+
+    # print(confusion_matrix(y_test, predict))
+    # print(classification_report(y_test, predict, target_names=classes))
+    # print(roc_auc_score(y, lr.predict_proba(x)[:, 1]))
 
     if model_name is not None:
         save_mode(lr, model_name)
@@ -50,30 +61,13 @@ def learning(training_data, test_size, model_name=None, roc_auc_curve_name=None)
         plt.savefig(roc_auc_curve_name)
 
 
-def learning_v2(training_data, test_size):
-    x, y = training_data
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=42)
-
-    classes = ['Не склейка', 'склейка']
-    lr = LogisticRegression()
-    lr.fit(x_train, y_train)
-
-    predict = lr.predict(x_test)
-
-    print(confusion_matrix(y_test, predict))
-    print(classification_report(y_test, predict, target_names=classes))
-    print(roc_auc_score(y, lr.predict_proba(x)[:, 1]))
-
-
 if __name__ == '__main__':
     root = os.getcwd()
-    training_data_filename = os.path.join(root, "vcd/resources/data/data.xlsx")
+    training_data_filename = os.path.join(root, "vcd/resources/data/data_ready.xlsx")
     model_template_name = os.path.join(root, "vcd/resources/models/lr_{}.model")
     roc_auc_curve_template_name = os.path.join(root, "vcd/resources/result/roc_auc_{}.png")
 
     x, y = get_training_data(training_data_filename)
-
-    # learning_v2((x, y), 0.75)
 
     epsilon = 1e-9
 

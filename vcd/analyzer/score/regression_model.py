@@ -1,5 +1,6 @@
 import pickle
 
+import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 from vcd.analyzer.score.score_analyzer import ScoreAnalyzer
@@ -22,4 +23,4 @@ class RegressionModelScoreAnalyzer(ScoreAnalyzer):
         self.__model = model
 
     def analyze(self):
-        return self.__model.predict(self._scores)
+        return np.where(self.__model.predict(self._scores) == 1)
