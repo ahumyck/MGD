@@ -49,8 +49,11 @@ def build_target(filename, length, delta):
 
 
 if __name__ == '__main__':
-    video_name = "C:\\Users\\ahumyck\\PycharmProjects\\diplom\\vcd\\resources\\video\\result.mp4"
-    target_filename = "/vcd/resources/data/target.txt"
+    root = os.getcwd()
+    training_data_filename = os.path.join(root, "vcd/resources/data/data.xlsx")
+    video_name = os.path.join(root, "vcd/resources/video/result.mp4")
+    target_filename = os.path.join(root, "vcd/resources/data/target.txt")
+
     prev = 30
     offset = prev + 1
 
@@ -65,4 +68,4 @@ if __name__ == '__main__':
         }
     )
 
-    dataframe.to_excel("data.xlsx")
+    dataframe.to_excel(training_data_filename)
