@@ -1,88 +1,38 @@
+import json
 import os
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from sklearn import metrics
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score
-from sklearn.model_selection import train_test_split
-
-from vcd.analyzer.score.regression_model import save_mode
+from vcd.application.main_logic import VIDEO_PATH_KEY, REGRESSION_MODEL_PATH_KEY
 
 
-def cast_arrays(arrays):
-    def cast_str_to_array_of_numbers(arr: str):
-        s = arr[1:-1]
-        elements = s.split(",")
-        res = []
-        for element in elements:
-            res.append(float(element.strip()))
-        return np.array(res)
-
-    result = []
-    length = []
-    for array in arrays:
-        arr = cast_str_to_array_of_numbers(array)
-        length.append(len(arr))
-        result.append(arr)
-
-    return np.array(result)
+def read_config_file(path):
+    with open(path) as f:
+        return json.load(f)
 
 
-def get_training_data(filename):
-    dataframe = pd.read_excel(filename, index_col=0)
-    return cast_arrays(dataframe['frame average speed']), dataframe['target'].to_numpy()
-
-
-def learning(training_data, test_size, model_name=None, roc_auc_curve_name=None):
-    x, y = training_data
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=42)
-
-    lr = LogisticRegression()
-    lr.fit(x_train, y_train)
-
-    if model_name is not None:
-        save_mode(lr, model_name)
-
-    if roc_auc_curve_name is not None:
-        metrics.plot_roc_curve(lr, x_test, y_test)
-        plt.savefig(roc_auc_curve_name)
-
-
-def learning_v2(training_data, test_size):
-    x, y = training_data
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=42)
-
-    classes = ['Не склейка', 'склейка']
-    lr = LogisticRegression()
-    lr.fit(x_train, y_train)
-
-    predict = lr.predict(x_test)
-
-    print(confusion_matrix(y_test, predict))
-    print(classification_report(y_test, predict, target_names=classes))
-    print(roc_auc_score(y, lr.predict_proba(x)[:, 1]))
+def create_config_file(data, path):
+    with open(path, "w") as f:
+        json.dump(data, f)
 
 
 if __name__ == '__main__':
-    root = os.getcwd()
-    training_data_filename = os.path.join(root, "vcd/resources/data/data.xlsx")
-    model_template_name = os.path.join(root, "vcd/resources/models/lr_{}.model")
-    roc_auc_curve_template_name = os.path.join(root, "vcd/resources/result/roc_auc_{}.png")
+    # video_path = input("Full path to video:")
 
-    x, y = get_training_data(training_data_filename)
+    config_path = os.path.join(os.getcwd(), "vcd/resources/config/config.json")
 
-    # learning_v2((x, y), 0.75)
+    # config_data = {
+    #     VIDEO_PATH_KEY: "C:/Users/ahumyck/PycharmProjects/diplom/vcd/resources/video/result.mp4",
+    #     ALGORITHM_TYPE_KEY: AlgorithmType.MSE,
+    #     REGRESSION_MODEL_PATH_KEY: ""
+    # }
+    #
+    # create_config_file(config_data, config_path)
 
-    epsilon = 1e-9
+    config = read_config_file(config_path)
+    video_path = config[VIDEO_PATH_KEY]
+    video_name = os.path.basename(video_path)
+    folder_path = os.path.dirname(video_path)
+    template_name = os.path.splitext(video_name)[0]
 
-    test_sizes = np.arange(0.01, 0.9 + epsilon, 0.01)  # np.arange(0, 1.1, 0.5) => [0, 0.5, 1.0]
-    for test_size in test_sizes:
-        print(test_size)
-        model_name = model_template_name.format(format(test_size, '.2f'))
-        roc_auc_name = roc_auc_curve_template_name.format(format(test_size, '.2f'))
-
-        learning((x, y), test_size, model_name, roc_auc_name)
-
-    plt.close('all')
+    print("folder_path:", folder_path)
+    print("template_name:", template_name)
+    print("video_name:", video_name)

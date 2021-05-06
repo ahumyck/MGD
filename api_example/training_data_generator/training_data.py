@@ -42,6 +42,8 @@ def build_target(filename, length, delta):
 
     target = [0] * length
     for frame in frames:
+        if frame >= length:
+            break
         target[frame] = 1
     return np.array(target)
 

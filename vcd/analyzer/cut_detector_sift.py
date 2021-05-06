@@ -31,6 +31,10 @@ class CutDetectorSIFT(CutDetector):
             if success:
                 kp_current, des_current = self._sift.detectAndCompute(current_image, None)
 
+                if kp_current is None or des_current is None:
+                    capture.release()
+                    return scores
+
                 start = time.time()
                 current_local_th = self.__local_th
                 # ищем совпадающие ключевые точки

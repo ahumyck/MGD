@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from vcd.analyzer.score.score_analyzer import ScoreAnalyzer
 
 
-def load_model(filename):
+def load_model(filename) -> LogisticRegression:
     with open(filename, 'rb') as f:
         return pickle.load(f)
 
@@ -18,9 +18,10 @@ def save_mode(model, filename):
 
 # todo: regression model
 class RegressionModelScoreAnalyzer(ScoreAnalyzer):
-    def __init__(self, scores, model: LogisticRegression):
+    def __init__(self, scores, offset, model: LogisticRegression):
         super().__init__(scores)
         self.__model = model
+        self.__ofset = offset
 
     def analyze(self):
         return np.where(self.__model.predict(self._scores) == 1)
