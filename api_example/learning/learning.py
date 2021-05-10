@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix
 
 from vcd.analyzer.score.regression_model import save_mode
 
@@ -22,15 +23,16 @@ def train_test_split(data_x, data_y, split_proportion):
     return data_x[:split_point], data_x[split_point:], data_y[:split_point], data_y[split_point:]
 
 
-def cast_arrays(arrays):
-    def cast_str_to_array_of_numbers(arr: str):
-        s = arr[1:-1]
-        elements = s.split(",")
-        res = []
-        for element in elements:
-            res.append(float(element.strip()))
-        return np.array(res)
+def cast_str_to_array_of_numbers(arr: str):
+    s = arr[1:-1]
+    elements = s.split(",")
+    res = []
+    for element in elements:
+        res.append(float(element.strip()))
+    return np.array(res)
 
+
+def cast_arrays(arrays):
     result = []
     length = []
     for array in arrays:
@@ -58,6 +60,9 @@ def learning(training_data, test_size, model_name=None, roc_auc_curve_name=None)
     lr = LogisticRegression()
     lr.fit(x_train, y_train)
 
+    cnf_matrix = confusion_matrix(y_test, lr.predict(x_test))
+    print(cnf_matrix)
+
     if model_name is not None:
         save_mode(lr, model_name)
 
@@ -68,9 +73,9 @@ def learning(training_data, test_size, model_name=None, roc_auc_curve_name=None)
 
 if __name__ == '__main__':
     root = os.getcwd()
-    training_data_filename = os.path.join(root, "vcd/resources/data/data.xlsx")
-    model_template_name = os.path.join(root, "vcd/resources/models/lr_{}.model")
-    roc_auc_curve_template_name = os.path.join(root, "vcd/resources/result/roc_auc_{}.png")
+    training_data_filename = os.path.join(root, "vcd/resources/training/data/data.xlsx")
+    model_template_name = os.path.join(root, "vcd/resources/training/models/lr_{}.model")
+    roc_auc_curve_template_name = os.path.join(root, "vcd/resources/training/result/roc_auc_{}.png")
 
     x, y = get_training_data(training_data_filename)
 

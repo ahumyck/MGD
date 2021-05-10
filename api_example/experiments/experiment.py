@@ -2,7 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 from core.handler import SaltAndPepperHandler, MoveByHandler
-from core.matcher import match_by_bruteforce_min_norm, match_by_bruteforce_fast, drawMatches
+from core.matcher import match_by_bruteforce_min_norm, search_for_matches, drawMatches
 from core.utils import float_range
 import numpy as np
 
@@ -23,7 +23,7 @@ def abstract_experiment(img1, img2, output_image_name, algorithm, th):
 
 
 def make_experiment_fast(img1, img2, output_image_name, th):
-    abstract_experiment(img1, img2, output_image_name, match_by_bruteforce_fast, th)
+    abstract_experiment(img1, img2, output_image_name, search_for_matches, th)
 
 
 def make_experiment_correct(img1, img2, output_image_name, th):

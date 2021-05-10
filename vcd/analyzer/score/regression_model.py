@@ -16,12 +16,13 @@ def save_mode(model, filename):
         pickle.dump(model, f)
 
 
-# todo: regression model
 class RegressionModelScoreAnalyzer(ScoreAnalyzer):
-    def __init__(self, scores, offset, model: LogisticRegression):
-        super().__init__(scores)
+    def __init__(self, scores, offset, fps, model: LogisticRegression):
+        super().__init__(scores, fps)
         self.__model = model
-        self.__ofset = offset
+        self.__offset = offset - 1
 
     def analyze(self):
-        return np.where(self.__model.predict(self._scores) == 1)
+        indexes = np.where(self.__model.predict(self._scores) == 1)[0]
+        indexes += self.__offset
+        return indexes, self._scores[indexes]

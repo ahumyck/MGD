@@ -45,7 +45,7 @@ def match_by_bruteforce_min_norm(kp1, des1, kp2, des2, dx=50, dy=50, th=50):
                     dtype=cv2.DMatch)
 
 
-def match_by_bruteforce_fast(kp1, des1, kp2, des2, dx=40, dy=40, global_th=10, local_th=50, limit=15):
+def search_for_matches(kp1, des1, kp2, des2, dx=40, dy=40, global_th=10, local_th=50, limit=15):
     """
         Ищем совпадения особых точек считая L2 норму разницы дискрипторов
         Если L2 норма меньше некоторого порогового значения, то считаем что ключевые точки совпадают, иначе нет
@@ -60,26 +60,24 @@ def match_by_bruteforce_fast(kp1, des1, kp2, des2, dx=40, dy=40, global_th=10, l
     :param dy: максимальная разность координат точек по оси у
     :return: список matcher'-ов
     """
-    i = 0
+    counters = 0
     result = []
     for trainIdx, d1 in enumerate(des1):
         for queryIdx, d2 in enumerate(des2):
             d = np.linalg.norm(d1 - d2)
             if d <= global_th:
                 result.append(create_match(d, trainIdx, queryIdx, 0))
-                i += 1
+                counters += 1
                 break
             elif d <= local_th:
                 keypoint1 = kp1[trainIdx]
                 keypoint2 = kp2[queryIdx]
                 if np.abs(keypoint2.pt[1] - keypoint1.pt[1]) <= dx and np.abs(keypoint2.pt[0] - keypoint1.pt[0]) <= dy:
                     result.append(create_match(d, trainIdx, queryIdx, 0))
-                    i += 1
+                    counters += 1
                     break
-        if i >= limit:
-            print(f'i = {trainIdx}')
+        if counters >= limit:
             return np.array(result, dtype=cv2.DMatch)
-    print(f'Full loop was iterated {len(des1)} x {len(des2)}')
     return np.array(result, dtype=cv2.DMatch)
 
 
@@ -138,17 +136,19 @@ def calculateDistance(point1, point2):
     return np.sqrt(dx * dx + dy * dy)
 
 
-def average_for_matchers(matchers, kp_prev, kp_current):
+def average_for_matchers(matchers, kpf, kps, how_many=5):
     """
         Функция для подсчета среднего смещения кадра по ключевым точкам
-    :param kp_current: ключевые точки с предыдущего изображения
-    :param kp_prev: ключевые точки с предыдущего изображения
+    :param kps: ключевые точки со следующего изображения
+    :param kpf: ключевые точки с предыдущего изображения
     :param matchers: лучшия совпадения особых точек с двух изображений
+    :param how_many: кол-во точек, которое стоит использовать для сбора статистики
     :return: среднее смещение кадра
     """
     statistics = []
     for matcher in matchers:
-        kp1 = kp_prev[matcher.trainIdx]
-        kp2 = kp_current[matcher.queryIdx]
+        kp1 = kpf[matcher.trainIdx]
+        kp2 = kps[matcher.queryIdx]
         statistics.append(calculateDistance(kp1, kp2))
-    return np.mean(statistics)
+    sorted_stats = sorted(statistics)
+    return np.mean(sorted_stats[:how_many])

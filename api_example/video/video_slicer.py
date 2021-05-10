@@ -1,7 +1,7 @@
 from vcd.spliterator import Spliterator
 
 if __name__ == '__main__':
-    path_to_video = "C:\\Users\\ahumyck\\PycharmProjects\\diplom\\vcd\\resources\\video\\result.mp4"
+    path_to_video = "/training/video\\result.mp4"
 
     frame_size = (600, 800)
     # fps = 60
