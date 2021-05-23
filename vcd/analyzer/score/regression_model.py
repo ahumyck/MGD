@@ -16,13 +16,31 @@ def save_mode(model, filename):
         pickle.dump(model, f)
 
 
+def convert_scores(scores, slice_size):
+    x = []
+
+    for index, score in enumerate(scores):
+        if index >= slice_size - 1:
+            x.append(np.array(scores[index - slice_size + 1: index + 1]))
+
+    return np.array(x)
+
+
+# def convert_scores(scores, size):
+#     expanded_scores = np.concatenate([[0] * (size - 1), scores])
+#     x = []
+#     for index, score in enumerate(expanded_scores):
+#         if index >= size - 1:
+#             vector = expanded_scores[index - size + 1: index + 1]
+#             x.append(np.array(vector))
+#     return np.array(x)
+
+
 class RegressionModelScoreAnalyzer(ScoreAnalyzer):
-    def __init__(self, scores, offset, fps, model: LogisticRegression):
-        super().__init__(scores, fps)
+    def __init__(self, scores, model: LogisticRegression):
+        super().__init__(scores)
         self.__model = model
-        self.__offset = offset - 1
 
     def analyze(self):
         indexes = np.where(self.__model.predict(self._scores) == 1)[0]
-        indexes += self.__offset
-        return indexes, self._scores[indexes]
+        return indexes, self._scores[indexes]  # indexes += (offset - 1)

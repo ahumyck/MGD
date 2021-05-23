@@ -1,89 +1,28 @@
-import os
-
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from sklearn import metrics
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix
 
-from vcd.analyzer.score.regression_model import save_mode
-
-
-def train_test_split(data_x, data_y, split_proportion):
-    if len(data_y) != len(data_x):
-        raise Exception(f'len(data_y) = {len(data_y)} vs len(data_x) = {len(data_x)}')
-
-    if split_proportion < 0 or split_proportion > 1:
-        raise Exception(f'split_proportion has to be in [0;1]')
-
-    size = len(data_x)
-    split_point = int(size * split_proportion)
-    # x_train, x_test, y_train, y_train
-    return data_x[:split_point], data_x[split_point:], data_y[:split_point], data_y[split_point:]
-
-
-def cast_str_to_array_of_numbers(arr: str):
-    s = arr[1:-1]
-    elements = s.split(",")
-    res = []
-    for element in elements:
-        res.append(float(element.strip()))
-    return np.array(res)
-
-
-def cast_arrays(arrays):
-    result = []
-    length = []
-    for array in arrays:
-        arr = cast_str_to_array_of_numbers(array)
-        length.append(len(arr))
-        result.append(arr)
-
-    index = min(length)
-    for i in range(len(result)):
-        arr = result[i]
-        result[i] = arr[-index:]
-
-    return np.array(result)
-
-
-def get_training_data(filename):
-    dataframe = pd.read_excel(filename, index_col=0)
-    return cast_arrays(dataframe['frame average speed']), dataframe['target'].to_numpy()
-
-
-def learning(training_data, test_size, model_name=None, roc_auc_curve_name=None):
-    x, y = training_data
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size)
-
-    lr = LogisticRegression()
-    lr.fit(x_train, y_train)
-
-    cnf_matrix = confusion_matrix(y_test, lr.predict(x_test))
-    print(cnf_matrix)
-
-    if model_name is not None:
-        save_mode(lr, model_name)
-
-    if roc_auc_curve_name is not None:
-        metrics.plot_roc_curve(lr, x_test, y_test)
-        plt.savefig(roc_auc_curve_name)
-
+from vcd.analyzer.score.regression_model import convert_scores, RegressionModelScoreAnalyzer, load_model
+from vcd.analyzer.score.score_analyzer import EmpiricalRuleScoreAnalyzer, less_op
+from vcd.analyzer.score_collector_sift import ScoreCollectorSIFT
+from vcd.analyzer.score_collector_ssim import ScoreCollectorSSIM
 
 if __name__ == '__main__':
-    root = os.getcwd()
-    training_data_filename = os.path.join(root, "vcd/resources/training/data/data.xlsx")
-    model_template_name = os.path.join(root, "vcd/resources/training/models/lr_{}.model")
-    roc_auc_curve_template_name = os.path.join(root, "vcd/resources/training/result/roc_auc_{}.png")
+    video_path = input("Укажите полный путь к видео:")
+    algorithm_type = input("Вариант анализа видео(SIFT или SSIM):")
 
-    x, y = get_training_data(training_data_filename)
-
-    test_size = 0.75
-
-    model_name = model_template_name.format(format(test_size, '.2f'))
-    roc_auc_name = roc_auc_curve_template_name.format(format(test_size, '.2f'))
-
-    learning((x, y), test_size, model_name, roc_auc_name)
-
-    plt.close('all')
+    if algorithm_type is "SIFT":
+        feature_vector_size = 30
+        model_path = input("Укажите путь к модели:")
+        collector_sift = ScoreCollectorSIFT(video_path, local_th=75)
+        scores = np.array(collector_sift.collect())
+        X = convert_scores(scores, feature_vector_size)
+        analyzer = RegressionModelScoreAnalyzer(scores, load_model(model_path))
+        indexes, values = analyzer.analyze()
+        print("Обнаруженные подозрительные места")
+        print(indexes + 1, scores[indexes + 1])
+    else:
+        collector_ssim = ScoreCollectorSSIM(video_path)
+        scores = np.array(collector_ssim.collect())
+        analyzer = EmpiricalRuleScoreAnalyzer(scores, less_op)
+        indexes, value = analyzer.analyze()
+        print("Обнаруженные подозрительные места")
+        print(indexes + 1, scores[indexes + 1])

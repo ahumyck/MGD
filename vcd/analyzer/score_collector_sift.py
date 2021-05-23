@@ -10,7 +10,7 @@ class ScoreCollectorSIFT(ScoreCollector):
         self.__global_th = global_th
         self.__local_th = local_th
         self.__matches_limit = matches_limit
-        self._sift = cv2.SIFT_create(nfeatures=500)
+        self._sift = cv2.SIFT_create(nfeatures=750)
 
     def collect(self):
         capture = cv2.VideoCapture(self._video_name)  # получаем поток видео
@@ -41,8 +41,8 @@ class ScoreCollectorSIFT(ScoreCollector):
                     allMatches.extend(matches)
                     current_local_th += 50
 
-                allMatches = sortMatchersByNorm(allMatches)
-                scores.append(average_for_matchers(allMatches[:5], kp_prev, kp_current))
+                # allMatches = sortMatchersByNorm(allMatches)
+                scores.append(average_for_matchers(allMatches, kp_prev, kp_current, how_many=50))
                 kp_prev = kp_current
                 des_prev = des_current
 

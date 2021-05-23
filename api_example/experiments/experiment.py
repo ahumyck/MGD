@@ -31,7 +31,7 @@ def make_experiment_correct(img1, img2, output_image_name, th):
 
 
 if __name__ == '__main__':
-    train_image = cv2.imread('core/box.png', cv2.IMREAD_GRAYSCALE)  # train image
+    train_image = cv2.imread('core/box.png', cv2.IMREAD_GRAYSCALE)  # training image
 
     move_by_handler = MoveByHandler(train_image)
 

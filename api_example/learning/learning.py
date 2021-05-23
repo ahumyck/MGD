@@ -19,7 +19,6 @@ def train_test_split(data_x, data_y, split_proportion):
 
     size = len(data_x)
     split_point = int(size * split_proportion)
-    # x_train, x_test, y_train, y_train
     return data_x[:split_point], data_x[split_point:], data_y[:split_point], data_y[split_point:]
 
 
@@ -34,16 +33,10 @@ def cast_str_to_array_of_numbers(arr: str):
 
 def cast_arrays(arrays):
     result = []
-    length = []
+
     for array in arrays:
         arr = cast_str_to_array_of_numbers(array)
-        length.append(len(arr))
         result.append(arr)
-
-    index = min(length)
-    for i in range(len(result)):
-        arr = result[i]
-        result[i] = arr[-index:]
 
     return np.array(result)
 

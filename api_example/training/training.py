@@ -56,33 +56,32 @@ def build_target(filename, length, delta):
 
 if __name__ == '__main__':
     root = os.getcwd()
-    training_data_filename = os.path.join(root, "vcd/resources/training/data/data.xlsx")
-    video_name = os.path.join(root, "vcd/resources/training/video/result.mp4")
-    target_filename = os.path.join(root, "vcd/resources/training/video/target.txt")
 
-    prev = 30
-    offset = prev + 1
-
-    print(f'video with name {video_name}')
-    X = np.array(build_scores(video_name, prev))
-    Y = np.array(build_target(target_filename, len(X), offset))
-
-    dataframe = pd.DataFrame(
-        {
-            "frame average speed": X,
-            "target": Y
-        }
-    )
-
-    dataframe.to_excel(training_data_filename)
+    # training_data_filename = os.path.join(root, "vcd/resources/training/data/data.xlsx")
+    # video_name = os.path.join(root, "vcd/resources/training/video/result.mp4")
+    # target_filename = os.path.join(root, "vcd/resources/training/video/target.txt")
+    #
+    # prev = 30
+    # offset = prev + 1
+    #
+    # print(f'video with name {video_name}')
+    # X = np.array(build_scores(video_name, prev))
+    # Y = np.array(build_target(target_filename, len(X), offset))
+    #
+    # dataframe = pd.DataFrame(
+    #     {
+    #         "frame average speed": X,
+    #         "target": Y
+    #     }
+    # )
+    #
+    # dataframe.to_excel(training_data_filename)
 
     path_to_videos = 'C:/Users/ahumyck/PycharmProjects/diplom/vcd/resources/MV'
     video_names = get_videos(path_to_videos)
     offset = 30
 
     for video_name in video_names:
-        if video_name in ["2.mp4"]:
-            continue
         full_video_path = os.path.join(path_to_videos, video_name)
         print(f'current video = {full_video_path}')
         X = np.array(build_scores(full_video_path, offset))

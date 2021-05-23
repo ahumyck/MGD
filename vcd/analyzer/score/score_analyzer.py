@@ -4,9 +4,8 @@ import numpy as np
 
 
 class ScoreAnalyzer:
-    def __init__(self, scores, fps):
+    def __init__(self, scores):
         self._scores = np.array(scores)
-        self._fps = fps
 
     @abc.abstractmethod
     def analyze(self):
@@ -27,8 +26,8 @@ def less_op(scores, mean, sigma):
 
 
 class EmpiricalRuleScoreAnalyzer(ScoreAnalyzer):
-    def __init__(self, scores, fps, operations):
-        super().__init__(scores, fps)
+    def __init__(self, scores, operations):
+        super().__init__(scores)
         self.__ops = operations
         self.__mean = 0
         self.__sigma = 0

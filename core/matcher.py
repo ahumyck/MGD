@@ -81,30 +81,6 @@ def search_for_matches(kp1, des1, kp2, des2, dx=40, dy=40, global_th=10, local_t
     return np.array(result, dtype=cv2.DMatch)
 
 
-def drawMatches(img1, kp1, img2, kp2, matches):
-    """
-        Функция для рисования matches
-        Честно повзаимствована из https://github.com/rmislam/PythonSIFT/blob/master/template_matching_demo.py
-    """
-    h1, w1 = img1.shape
-    h2, w2 = img2.shape
-    nWidth = w1 + w2
-    nHeight = max(h1, h2)
-    hdif = int((h2 - h1) / 2)
-    newimg = np.zeros((nHeight, nWidth, 3), np.uint8)
-
-    for i in range(3):
-        newimg[hdif:hdif + h1, :w1, i] = img1
-        newimg[:h2, w1:w1 + w2, i] = img2
-
-    for m in matches:
-        pt1 = (int(kp1[m.trainIdx].pt[0]), int(kp1[m.trainIdx].pt[1] + hdif))
-        pt2 = (int(kp2[m.queryIdx].pt[0] + w1), int(kp2[m.queryIdx].pt[1]))
-        cv2.line(newimg, pt1, pt2, (255, 0, 0))
-
-    return newimg
-
-
 def sortMatchersBy(matchers, attribute_name):
     """
         Сортировка совпадений по заданному атрибуту
