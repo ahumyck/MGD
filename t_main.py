@@ -1,0 +1,86 @@
+import os
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from sklearn import metrics
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+
+from vcd.analyzer.score.regression_model import save_mode
+
+
+def train_test_split(data_x, data_y, split_proportion):
+    if len(data_y) != len(data_x):
+        raise Exception(f'len(data_y) = {len(data_y)} vs len(data_x) = {len(data_x)}')
+
+    if split_proportion < 0 or split_proportion > 1:
+        raise Exception(f'split_proportion has to be in [0;1]')
+
+    size = len(data_x)
+    split_point = int(size * split_proportion)
+    return data_x[:split_point], data_x[split_point:], data_y[:split_point], data_y[split_point:]
+
+
+def cast_str_to_array_of_numbers(arr: str):
+    s = arr[1:-1]
+    elements = s.split(",")
+    res = []
+    for element in elements:
+        res.append(float(element.strip()))
+    return np.array(res)
+
+
+def cast_arrays(arrays):
+    result = []
+
+    for array in arrays:
+        arr = cast_str_to_array_of_numbers(array)
+        result.append(arr)
+
+    return np.array(result)
+
+
+def get_training_data(filename):
+    dataframe = pd.read_excel(filename, index_col=0)
+    return cast_arrays(dataframe['frame average speed']), dataframe['target'].to_numpy()
+
+
+def learning(training_data, test_size, model_name=None, roc_auc_curve_name=None):
+    x, y = training_data
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size)
+
+    random_forest = RandomForestClassifier(max_depth=10, random_state=0)
+    random_forest.fit(x_train, y_train)
+
+    cnf_matrix = confusion_matrix(y_test, random_forest.predict(x_test))
+    print(cnf_matrix)
+
+    print(classification_report(y_test, random_forest.predict(x_test), target_names=['Не склейка', 'Склейка']))
+    print(accuracy_score(y_test, random_forest.predict(x_test)))
+
+    if model_name is not None:
+        save_mode(random_forest, model_name)
+
+    if roc_auc_curve_name is not None:
+        metrics.plot_roc_curve(random_forest, x_test, y_test)
+        plt.savefig(roc_auc_curve_name)
+
+
+if __name__ == '__main__':
+    root = os.getcwd()
+    training_data_filename = os.path.join(root, "vcd/resources/training/data/data.xlsx")
+    model_template_name = os.path.join(root, "vcd/resources/training/models/rf_{}.model")
+    roc_auc_curve_template_name = os.path.join(root, "vcd/resources/training/result/roc_auc_rf_{}.png")
+
+    x, y = get_training_data(training_data_filename)
+
+    test_size = 0.75
+
+    model_name = model_template_name.format(format(test_size, '.2f'))
+    roc_auc_name = roc_auc_curve_template_name.format(format(test_size, '.2f'))
+
+    learning((x, y), test_size, model_name, roc_auc_name)
+
+    plt.close('all')

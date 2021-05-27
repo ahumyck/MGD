@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn import metrics
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
 
@@ -50,25 +51,25 @@ def learning(training_data, test_size, model_name=None, roc_auc_curve_name=None)
     x, y = training_data
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size)
 
-    lr = LogisticRegression()
-    lr.fit(x_train, y_train)
+    random_forest = RandomForestClassifier(max_depth=6, random_state=0)
+    random_forest.fit(x_train, y_train)
 
-    cnf_matrix = confusion_matrix(y_test, lr.predict(x_test))
+    cnf_matrix = confusion_matrix(y_test, random_forest.predict(x_test))
     print(cnf_matrix)
 
     if model_name is not None:
-        save_mode(lr, model_name)
+        save_mode(random_forest, model_name)
 
     if roc_auc_curve_name is not None:
-        metrics.plot_roc_curve(lr, x_test, y_test)
+        metrics.plot_roc_curve(random_forest, x_test, y_test)
         plt.savefig(roc_auc_curve_name)
 
 
 if __name__ == '__main__':
     root = os.getcwd()
     training_data_filename = os.path.join(root, "vcd/resources/training/data/data.xlsx")
-    model_template_name = os.path.join(root, "vcd/resources/training/models/lr_{}.model")
-    roc_auc_curve_template_name = os.path.join(root, "vcd/resources/training/result/roc_auc_{}.png")
+    model_template_name = os.path.join(root, "vcd/resources/training/models/rf_{}.model")
+    roc_auc_curve_template_name = os.path.join(root, "vcd/resources/training/result/roc_auc_rf_{}.png")
 
     x, y = get_training_data(training_data_filename)
 

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from api_example.learning.learning import cast_arrays
+from api_example.learning.learning_lr import cast_arrays
 from vcd.analyzer.score.regression_model import RegressionModelScoreAnalyzer, load_model
 
 
