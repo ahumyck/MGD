@@ -36,7 +36,7 @@ def convert_scores(scores, slice_size):
 #     return np.array(x)
 
 
-class RegressionModelScoreAnalyzer(ScoreAnalyzer):
+class RandomForestScoreAnalyzer(ScoreAnalyzer):
     def __init__(self, scores, model: LogisticRegression):
         super().__init__(scores)
         self.__model = model

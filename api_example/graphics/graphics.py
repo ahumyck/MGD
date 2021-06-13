@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from api_example.learning.learning_lr import cast_arrays
-from vcd.analyzer.score.regression_model import RegressionModelScoreAnalyzer, load_model
+from vcd.analyzer.score.regression_model import RandomForestScoreAnalyzer, load_model
 
 
 def get_data(filename):
@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     inputs = get_data(training_data_filename)
     data = rearrange(inputs)
-    analyzer = RegressionModelScoreAnalyzer(inputs, load_model(model_filename))
+    analyzer = RandomForestScoreAnalyzer(inputs, load_model(model_filename))
 
     indexes, values = analyzer.analyze()
 
